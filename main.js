@@ -65,6 +65,8 @@ const GameObject = ({
   }
   element.style.transformOrigin = "center";
 
+  const degToRad = (deg) => (deg * Math.PI) / 180;
+
   const change = ({
     tlX = x,
     tlY = y,
@@ -86,22 +88,28 @@ const GameObject = ({
     translate(dx = 0, dy = 0) {
       x += dx;
       y += dy;
-      change({ tlX: x, tlY: y });
-    },
-    rotate(value = 0, measure = "deg") {
-      let xRot = Math.sqrt(1 / (Math.tan((value * Math.PI) / 180) + 1));
-      let yRot = Math.sqrt(1 - xRot ** 2);
-      console.log(Math.tan((value * Math.PI) / 180), xRot, yRot);
-      rotate += value;
       change({
-        scX: yRot * scaleX,
-        scY: yRot * scaleY,
-        rot: xRot,
+        tlX: x,
+        tlY: y,
+        scX: Math.cos(rotate) * scaleX,
+        scY: Math.cos(rotate) * scaleY,
+        rot: Math.sin(rotate),
       });
     },
-    scale(x = 1, y = 1) {
-      scaleX += x;
-      scaleY += y;
+    rotate(value = 0) {
+      value = degToRad(value);
+      rotate += value;
+      change({
+        scX: Math.cos(rotate) * scaleX,
+        scY: Math.cos(rotate) * scaleY,
+        rot: Math.sin(rotate),
+        tlX: x,
+        tlY: y,
+      });
+    },
+    scale(scX = 1, scY = 1) {
+      scaleX += scX;
+      scaleY += scY;
       change({ scX: scaleX, scY: scaleY });
     },
     position() {
@@ -125,11 +133,11 @@ scene.DOM.append(ball.DOM);
 
 scene.startKeyEvents();
 
-// ball.translate(10, 10);
-ball.rotate(110, "deg");
-// ball.DOM.style.transform = 'rotate(0.125turn)'
 const animate = () => {
-  requestAnimationFrame(animate);
+  ball.rotate(1);
+  ball.translate(1, 1);
+  // requestAnimationFrame(animate);
 };
+console.log(getComputedStyle(ball.DOM, null).transform);
 
 animate();
