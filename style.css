@@ -16,21 +16,33 @@ body {
 .scene {
   position: relative;
   overflow: hidden;
+  display: flex;
   border: 1px solid black;
   height: 50%;
   width: 50%;
 }
 
-.scene .ball {
+.scene .box {
   position: absolute;
   width: 50px;
   height: 50px;
+  border: 1px solid black;
   background: red;
 }
 
-.scene .aim {
+.scene .ball {
   position: absolute;
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: green;
+}
+
+.scene .player {
+  position: absolute;
+  width: 200px;
+  height: 30px;
+  /* border: 1px solid black; */
+  bottom: 0;
   background: blue;
 }

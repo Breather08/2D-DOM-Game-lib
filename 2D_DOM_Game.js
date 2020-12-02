@@ -12,6 +12,15 @@ const Scene = () => {
     DOM: sceneDOM,
     RECT: sceneDOM.getBoundingClientRect(),
     keyState: keyState,
+    startKeyEvents() {
+      document.onkeydown = document.onkeyup = (event) => {
+        if (event.type === "keydown") {
+          keyState[event.keyCode] = true;
+        } else if (event.type === "keyup") {
+          keyState[event.keyCode] = false;
+        }
+      };
+    },
     position() {
       let sceneBox = this.RECT;
 
@@ -22,49 +31,31 @@ const Scene = () => {
         height: Math.round(sceneBox.height),
       };
     },
-    startKeyEvents() {
-      sceneDOM.onkeydown = sceneDOM.onkeyup = (event) => {
-        console.log(keyState);
-        if (event.type === "keydown") {
-          keyState[event.keyCode] = true;
-        } else if (event.type === "keyup") {
-          keyState[event.keyCode] = false;
-        }
-      };
-    },
   };
 };
 
-const GameObject = ({
-  className,
-  id,
-  src,
-  element,
-  initialCoords = [0, 0],
-}) => {
+const GameObject = ({ className, id, src, initialCoords = [0, 0] }) => {
   let rotate = 0,
     scaleX = 1,
     scaleY = 1;
 
   let [x, y] = initialCoords;
-  if (!element) {
-    element = createElement({
-      tagName: "div",
-      classNames: src ? `img-container` : `${className ? className : ""}`,
-      children: src
-        ? [
-            createElement({
-              tagName: "img",
-              attrs: [["src", `${src}`], id ? ["id", `${id}`] : []],
-              width: "100%",
-              height: "100%",
-            }),
-          ]
-        : [],
-    });
-  }
+  let element = createElement({
+    tagName: "div",
+    classNames: src ? `img-container` : `${className ? className : ""}`,
+    children: src
+      ? [
+          createElement({
+            tagName: "img",
+            attrs: [["src", `${src}`], id ? ["id", `${id}`] : []],
+            width: "100%",
+            height: "100%",
+          }),
+        ]
+      : [],
+  });
   element.style.transformOrigin = "center";
-
+  document.querySelector(".scene").append(element);
   const degToRad = (deg) => (deg * Math.PI) / 180;
 
   const change = ({
@@ -93,7 +84,7 @@ const GameObject = ({
         tlY: y,
         scX: Math.cos(rotate) * scaleX,
         scY: Math.cos(rotate) * scaleY,
-        rot: Math.sin(rotate),
+        rot: Math.sin(rotate) * scaleX,
       });
     },
     rotate(value = 0) {
@@ -102,19 +93,27 @@ const GameObject = ({
       change({
         scX: Math.cos(rotate) * scaleX,
         scY: Math.cos(rotate) * scaleY,
-        rot: Math.sin(rotate),
+        rot: Math.sin(rotate) * scaleX,
         tlX: x,
         tlY: y,
       });
     },
-    scale(scX = 1, scY = 1) {
-      scaleX += scX;
-      scaleY += scY;
-      change({ scX: scaleX, scY: scaleY });
+    scale(sc = 1) {
+      scaleX = sc;
+      scaleY = sc;
+      change({
+        scX: Math.cos(rotate) * scaleX,
+        scY: Math.cos(rotate) * scaleY,
+        rot: Math.sin(rotate) * scaleX,
+        tlX: x,
+        tlY: y,
+      });
     },
     position() {
       let sceneBox = document.querySelector(".scene").getBoundingClientRect();
-      let gameObjBox = element.getBoundingClientRect();
+      let gameObjBox = document
+        .querySelector(`.${className}`)
+        .getBoundingClientRect();
 
       return {
         top: Math.round(gameObjBox.top - sceneBox.top),
@@ -127,17 +126,7 @@ const GameObject = ({
 };
 
 // testing
-const scene = Scene();
-const ball = GameObject({ className: "ball" });
-scene.DOM.append(ball.DOM);
+const scene = Scene()
 
-scene.startKeyEvents();
-
-const animate = () => {
-  ball.rotate(1);
-  ball.translate(1, 1);
-  // requestAnimationFrame(animate);
-};
-console.log(getComputedStyle(ball.DOM, null).transform);
-
-animate();
+// animation.start();
+// console.log(getComputedStyle(box.DOM, null).transform);
